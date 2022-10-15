@@ -1,17 +1,27 @@
 package pl.coderslab;
 
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class TaskManager {
     static final String TASK_FILE = "tasks.csv";
+    static String[][] tasks = new String[0][];
+    private static Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
     public static void main(String[] args) {
         menuList();
         downloadFromFile();
+        menuOperations();
     }
 
     private static void menuList() {
@@ -22,43 +32,124 @@ public class TaskManager {
         }
     }
 
-    private static void menuOperations(String operation) {
-        switch (operation) {
-            case "add":
-                addTask();
-                break;
-            case "remove":
-                removeTask();
-                break;
-            case "list":
-                listTasks();
-                break;
-            case "exit":
-                exit();
-                break;
-            default:
-                System.out.println("Podano niewłaściwą nazwę operacji");
-                break;
+    private static void menuOperations() {
+        System.out.println("Wybierz operację");
+        Scanner scanner = new Scanner(System.in);
+        String operation = scanner.nextLine();
+
+        for (; ; ) {
+            switch (operation) {
+                case "add":
+                    addTask();
+                    break;
+                case "remove":
+                    removeTask();
+                    break;
+                case "list":
+                    listTasks();
+                    break;
+                case "exit":
+                    exit();
+                    break;
+                default:
+                    System.out.println("Podano niewłaściwą nazwę operacji");
+                    menuOperations();
+            }
         }
     }
 
     private static void exit() {
+        saveTabToFile(TASK_FILE, tasks);
+        System.out.println(ConsoleColors.RED + "Bye, bye.");
+        System.exit(0);
     }
 
     private static void listTasks() {
-
+        for (int i = 0; i < tasks.length; i++) {
+            for (int j = 0; j < tasks[i].length; j++) {
+                System.out.print(tasks[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        menuOperations();
     }
 
-    private static void removeTask() {
+    private static String[][] removeTask() {
+        String[][] tasks = downloadFromFile();
+        System.out.println("Please select number to remove");
+        Scanner scanner = new Scanner(System.in);
 
+        for (; ; ) {
+            while (!scanner.hasNextInt()) {
+                scanner.next();
+                System.out.println("Podana liczba jest nieprawidłowa. Spróbuj jeszcze raz:");
+            }
+            int taskToRemove = scanner.nextInt();
+            if (taskToRemove > 0 && taskToRemove < tasks.length) {
+                try {
+                    tasks = ArrayUtils.remove(tasks, taskToRemove);
+                    break;
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Podano wartość spoza zakresu tablicy");
+                }
+            } else {
+                System.out.println("Podana wartość jest nieprawidłowa");
+            }
+        }
+
+        System.out.println("Prawidłowo usunięto element z tablicy");
+        menuOperations();
+        return tasks;
     }
 
-    private static void addTask() {
+    private static String[][] addTask() {
+        String[][] tasks = downloadFromFile();
 
+        Scanner scanner = new Scanner(System.in);
+        String taskDescription = "";
+        String taskDueDate = "";
+        String taskImportance = "";
+
+        System.out.println("Please add task description");
+        taskDescription = scanner.nextLine();
+
+        System.out.println("Please add task due date");
+        taskDueDate = scanner.nextLine();
+
+        while (true) {
+            if (matches(taskDueDate) == true) {
+                break;
+            } else {
+                System.out.println("Podana wartość nie jest datą. Podaj jeszcze raz: ");
+                taskDueDate = scanner.nextLine();
+            }
+        }
+
+        System.out.println("Is your task important: true/false");
+        taskImportance = scanner.nextLine();
+
+        while (true) {
+            if ("true".equals(taskImportance) || "false".equals(taskImportance)) {
+                break;
+            } else {
+                System.out.println("Podana wartość nie jest prawidłowa. Wpisz true lub false:");
+                taskImportance = scanner.nextLine();
+            }
+        }
+        tasks = Arrays.copyOf(tasks, tasks.length + 1);
+        tasks[tasks.length - 1] = new String[3];
+        tasks[tasks.length - 1][0] = taskDescription;
+        tasks[tasks.length - 1][1] = taskDueDate;
+        tasks[tasks.length - 1][2] = taskImportance;
+
+        System.out.println("Prawidłowo dodano element do pliku");
+        menuOperations();
+        return tasks;
     }
+
 
     private static String[][] downloadFromFile() {
-        String[][] tasks = new String[0][];
         File file = new File(TASK_FILE);
 
         try (Scanner scanner = new Scanner(file)) {
@@ -74,12 +165,26 @@ public class TaskManager {
         } catch (FileNotFoundException e) {
             System.out.println("Nie znaleziono pliku");
         }
-/*        for (int i = 0; i < tasks.length; i++) {
-            for (int j = 0; j < tasks[i].length; j++) {
-                System.out.print(tasks[i][j] +", ");
-            }
-            System.out.println();
-        }*/
+
         return tasks;
+    }
+
+    public static boolean matches(String date) {
+        return DATE_PATTERN.matcher(date).matches();
+    }
+
+    public static void saveTabToFile(String fileName, String[][] tab) {
+        Path dir = Paths.get(fileName);
+
+        String[] lines = new String[tasks.length];
+        for (int i = 0; i < tab.length; i++) {
+            lines[i] = String.join(",", tab[i]);
+        }
+
+        try {
+            Files.write(dir, Arrays.asList(lines));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
