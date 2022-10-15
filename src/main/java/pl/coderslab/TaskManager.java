@@ -19,9 +19,9 @@ public class TaskManager {
     private static Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
     public static void main(String[] args) {
+        String[][] tasks = downloadFromFile();
         menuList();
-        downloadFromFile();
-        menuOperations();
+        menuOperations(tasks);
     }
 
     private static void menuList() {
@@ -32,7 +32,7 @@ public class TaskManager {
         }
     }
 
-    private static void menuOperations() {
+    private static void menuOperations(String[][] tasks) {
         System.out.println("Wybierz operację");
         Scanner scanner = new Scanner(System.in);
         String operation = scanner.nextLine();
@@ -40,31 +40,31 @@ public class TaskManager {
         for (; ; ) {
             switch (operation) {
                 case "add":
-                    addTask();
+                    addTask(tasks);
                     break;
                 case "remove":
-                    removeTask();
+                    removeTask(tasks);
                     break;
                 case "list":
-                    listTasks();
+                    listTasks(tasks);
                     break;
                 case "exit":
-                    exit();
+                    exit(tasks);
                     break;
                 default:
                     System.out.println("Podano niewłaściwą nazwę operacji");
-                    menuOperations();
+                    menuOperations(tasks);
             }
         }
     }
 
-    private static void exit() {
+    private static void exit(String[][] tasks) {
         saveTabToFile(TASK_FILE, tasks);
         System.out.println(ConsoleColors.RED + "Bye, bye.");
         System.exit(0);
     }
 
-    private static void listTasks() {
+    private static void listTasks(String[][] tasks) {
         for (int i = 0; i < tasks.length; i++) {
             for (int j = 0; j < tasks[i].length; j++) {
                 System.out.print(tasks[i][j] + ", ");
@@ -72,11 +72,10 @@ public class TaskManager {
             System.out.println();
         }
         System.out.println();
-        menuOperations();
+        menuOperations(tasks);
     }
 
-    private static String[][] removeTask() {
-        String[][] tasks = downloadFromFile();
+    private static String[][] removeTask(String[][] tasks) {
         System.out.println("Please select number to remove");
         Scanner scanner = new Scanner(System.in);
 
@@ -99,13 +98,11 @@ public class TaskManager {
         }
 
         System.out.println("Prawidłowo usunięto element z tablicy");
-        menuOperations();
+        menuOperations(tasks);
         return tasks;
     }
 
-    private static String[][] addTask() {
-        String[][] tasks = downloadFromFile();
-
+    private static String[][] addTask(String[][] tasks) {
         Scanner scanner = new Scanner(System.in);
         String taskDescription = "";
         String taskDueDate = "";
@@ -144,7 +141,7 @@ public class TaskManager {
         tasks[tasks.length - 1][2] = taskImportance;
 
         System.out.println("Prawidłowo dodano element do pliku");
-        menuOperations();
+        menuOperations(tasks);
         return tasks;
     }
 
@@ -173,12 +170,12 @@ public class TaskManager {
         return DATE_PATTERN.matcher(date).matches();
     }
 
-    public static void saveTabToFile(String fileName, String[][] tab) {
+    public static void saveTabToFile(String fileName, String[][] tasks) {
         Path dir = Paths.get(fileName);
 
         String[] lines = new String[tasks.length];
-        for (int i = 0; i < tab.length; i++) {
-            lines[i] = String.join(",", tab[i]);
+        for (int i = 0; i < tasks.length; i++) {
+            lines[i] = String.join(",", tasks[i]);
         }
 
         try {
