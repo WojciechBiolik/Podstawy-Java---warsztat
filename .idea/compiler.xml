@@ -12,5 +12,8 @@
         <module name="TaskManager" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="TaskManager" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
