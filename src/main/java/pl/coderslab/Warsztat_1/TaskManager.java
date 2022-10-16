@@ -86,7 +86,7 @@ public class TaskManager {
                 System.out.println("Podana liczba jest nieprawidłowa. Spróbuj jeszcze raz:");
             }
             int taskToRemove = scanner.nextInt();
-            if (taskToRemove > 0 && taskToRemove < tasks.length) {
+            if (taskToRemove >= 0 && taskToRemove < tasks.length) {
                 try {
                     tasks = ArrayUtils.remove(tasks, taskToRemove);
                     break;
