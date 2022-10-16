@@ -1,7 +1,8 @@
-package pl.coderslab;
+package pl.coderslab.Warsztat_1;
 
 
 import org.apache.commons.lang3.ArrayUtils;
+import pl.coderslab.Warsztat_1.ConsoleColors;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ public class TaskManager {
     private static Pattern DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
 
     public static void main(String[] args) {
-        String[][] tasks = downloadFromFile();
+        tasks = downloadFromFile();
         menuList();
         menuOperations(tasks);
     }
@@ -67,7 +68,7 @@ public class TaskManager {
     private static void listTasks(String[][] tasks) {
         for (int i = 0; i < tasks.length; i++) {
             for (int j = 0; j < tasks[i].length; j++) {
-                System.out.print(tasks[i][j] + ", ");
+                System.out.print(i + ": " + tasks[i][j] + ", ");
             }
             System.out.println();
         }
